@@ -19,4 +19,5 @@ from django.urls import path, include
 urlpatterns = [
     path('ping/', include('ping.urls')),
     path('admin/', admin.site.urls),
+    path('author/', include('author.urls')),
 ]
