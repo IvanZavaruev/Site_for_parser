@@ -11,6 +11,7 @@ def index(request):
 
 
 def publications(request, author_id):
+    format = request.GET.get('format', None)
     year_from = request.GET.get('year_from', 2015)
     year_to = request.GET.get('year_to', 2021)
     response = HttpResponse(content_type='text/csv')
@@ -20,20 +21,34 @@ def publications(request, author_id):
         parser.find_publications()
         parser.parse_publications()
 
-        save_path = Path(f"{tmpdir}/processed/{str(author_id)}")
-        save_path.mkdir(exist_ok=True)
-
-        csv_path = save_path / "publications.csv"
-        with open(csv_path, 'a', encoding="utf8", newline='') as csvfile:
-            wr = csv.writer(response, csvfile, delimiter=';')
+        if format == 'json':
+            json_data = []
             for publication in parser.publications:
-                saving_publication = [
+                saving_publication = (
                     publication.title,
                     publication.authors,
                     publication.info,
                     publication.link,
                     publication.year
-                ]
-                wr.writerow(saving_publication)
+                )
+                json_data.append(saving_publication)
+            to_json = {"publications": json_data}
+            return HttpResponse(to_json)
+        else:
+            save_path = Path(f"{tmpdir}/processed/{str(author_id)}")
+            save_path.mkdir(exist_ok=True)
 
-    return response
+            csv_path = save_path / "publications.csv"
+            with open(csv_path, 'a', encoding="utf8", newline='') as csvfile:
+                wr = csv.writer(response, csvfile, delimiter=';')
+                for publication in parser.publications:
+                    saving_publication = [
+                        publication.title,
+                        publication.authors,
+                        publication.info,
+                        publication.link,
+                        publication.year
+                    ]
+                    wr.writerow(saving_publication)
+
+            return response
