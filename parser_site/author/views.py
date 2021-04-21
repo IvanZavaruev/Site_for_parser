@@ -2,7 +2,7 @@ import tempfile
 import csv
 from pathlib import Path
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from elibrary_parser.Parsers import AuthorParser
 
 
@@ -33,7 +33,7 @@ def publications(request, author_id):
                 )
                 json_data.append(saving_publication)
             to_json = {"publications": json_data}
-            return HttpResponse(to_json)
+            return JsonResponse(to_json)
         else:
             save_path = Path(f"{tmpdir}/processed/{str(author_id)}")
             save_path.mkdir(exist_ok=True)
