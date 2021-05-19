@@ -10,10 +10,10 @@ class Years(models.Model):
 
 
 class Publication(models.Model):
-    title = models.CharField(max_length=500)
+    title = models.CharField(max_length=540)
     authors = models.ManyToManyField(Author)
-    info = models.CharField(max_length=500)
-    link = models.CharField(max_length=500)
-    year = models.ForeignKey(Years, on_delete=models.CASCADE())
+    link = models.CharField(max_length=122)
+    info = models.CharField(max_length=540)
+    year = models.ForeignKey(Years, on_delete=models.CASCADE)
 # Создать класс Автор с соответствующими атрибутами (название, авторы, инфо, ссылки, год )?
 # в урлах ссылка на id автора, а views функция для парсинга
