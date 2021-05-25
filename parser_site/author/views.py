@@ -10,7 +10,7 @@ def index(request):
     return HttpResponse('Author working')
 
 
-def return_csv(tmpdir, author_id, response, parser):
+def save_publication_to_csv(tmpdir, author_id, response, parser):
     save_path = Path(f"{tmpdir}/processed/{str(author_id)}")
     save_path.mkdir(exist_ok=True)
 
@@ -30,7 +30,7 @@ def return_csv(tmpdir, author_id, response, parser):
     return response
 
 
-def return_json(parser):
+def publication_json(parser):
     json_data = []
     for publication in parser.publications:
         saving_publication = (
@@ -65,6 +65,6 @@ def publications(request, author_id):
         parser.parse_publications()
 
         if format == 'json':
-            return JsonResponse(return_json(parser))
+            return JsonResponse(publication_json(parser))
         else:
-            return return_csv(tmpdir, author_id, response, parser)
+            return save_publication_to_csv(tmpdir, author_id, response, parser)
