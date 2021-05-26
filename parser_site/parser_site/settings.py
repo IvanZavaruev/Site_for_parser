@@ -83,10 +83,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'DBforParser',
-        'USER' : f'{Secrets.user}',
-        'PASSWORD' : f'{Secrets.password}',
-        'HOST' : 'localhost',
-        'PORT' : '5432',
+        'USER': Secrets.user,
+        'PASSWORD': Secrets.password,
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
