@@ -52,6 +52,11 @@ def publications(request, author_id):
     year_from = request.GET.get('year_from', 2015)
     year_to = request.GET.get('year_to', 2021)
 
+    if type(year_from) != 'int':
+        year_from = 2015
+    elif type(year_to) != 'int':
+        year_to = 2021
+
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename= "{author_id}.csv"'
 
