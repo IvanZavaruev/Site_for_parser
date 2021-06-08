@@ -52,13 +52,15 @@ def publications(request, author_id):
     year_from = request.GET.get('year_from', 2015)
     year_to = request.GET.get('year_to', 2021)
 
-    if type(year_from) != 'int':
-        year_from = 2015
-    elif type(year_to) != 'int':
-        year_to = 2021
-
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename= "{author_id}.csv"'
+
+    try:
+        int(year_from)
+        int(year_to)
+    except ValueError:
+        year_from = 2015
+        year_to = 2021
 
     with tempfile.TemporaryDirectory() as tmpdir:
         parser = AuthorParser(
@@ -68,7 +70,6 @@ def publications(request, author_id):
             date_to=int(year_to))
         parser.find_publications()
         parser.parse_publications()
-
         if format == 'json':
             return JsonResponse(publication_json(parser))
         else:
