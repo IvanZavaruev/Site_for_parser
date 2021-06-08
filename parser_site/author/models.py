@@ -9,7 +9,7 @@ class Author(models.Model):
 
 
 class Years(models.Model):
-    year = models.IntegerField(max_length=20, primary_key=True, unique=True)
+    year = models.IntegerField(primary_key=True, unique=True)
 
     def __str__(self):
         return self.year
