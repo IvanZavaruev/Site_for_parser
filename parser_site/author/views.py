@@ -1,6 +1,7 @@
 import tempfile
 import csv
 from pathlib import Path
+from django.template import loader
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from elibrary_parser.Parsers import AuthorParser
@@ -8,7 +9,9 @@ from .models import Years
 
 
 def index(request):
-    return HttpResponse('Author working')
+    template = loader.get_template('author/index.html')
+
+    return HttpResponse(template.render())
 
 
 def save_publication_to_csv(tmpdir, author_id, response, parser):
