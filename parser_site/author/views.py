@@ -1,9 +1,10 @@
 import tempfile
 import csv
 from pathlib import Path
+from django.urls import reverse
 from django.template import loader
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from elibrary_parser.Parsers import AuthorParser
 from .models import Years
 
@@ -12,6 +13,12 @@ def index(request):
     template = loader.get_template('author/index.html')
 
     return HttpResponse(template.render())
+
+
+def search(request):
+    if request.method == 'GET':
+        author_id = request.GET['author_id']
+        return HttpResponseRedirect(reverse('publications', args=[author_id]))
 
 
 def save_publication_to_csv(tmpdir, author_id, response, parser):
@@ -74,7 +81,7 @@ def publications(request, author_id):
             date_to=int(year_to))
         parser.find_publications()
         parser.parse_publications()
-        add_years_to_Data_Base(parser, Years)
+        #add_years_to_Data_Base(parser, Years)
         if format == 'json':
             return JsonResponse(publication_json(parser))
         else:
