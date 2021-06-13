@@ -6,7 +6,6 @@ from django.urls import reverse
 from django.template import loader
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from elibrary_parser.Parsers import AuthorParser
-from .models import Years
 
 
 def index(request):
@@ -100,14 +99,7 @@ def publications(request, author_id):
             date_to=int(year_to))
         parser.find_publications()
         parser.parse_publications()
-        #add_years_to_Data_Base(parser, Years)
         if format != 'json':
             return save_publication_to_csv_or_xlsx(tmpdir, author_id, parser, format)
         else:
             return JsonResponse(publication_json(parser))
-
-
-def add_years_to_Data_Base(parser, Years):
-    for publication in parser.publications:
-        year_for_save = Years(year=publication.year)
-        year_for_save.save()
