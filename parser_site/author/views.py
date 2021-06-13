@@ -1,9 +1,9 @@
 import tempfile
 import csv
+import pandas
 from pathlib import Path
 from django.urls import reverse
 from django.template import loader
-from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from elibrary_parser.Parsers import AuthorParser
 from .models import Years
@@ -21,22 +21,44 @@ def search(request):
         return HttpResponseRedirect(reverse('publications', args=[author_id]))
 
 
-def save_publication_to_csv(tmpdir, author_id, response, parser):
+def save_publication_to_csv_or_xlsx(tmpdir, author_id, parser, format):
     save_path = Path(f"{tmpdir}/processed/{str(author_id)}")
     save_path.mkdir(exist_ok=True)
 
-    csv_path = save_path / "publications.csv"
-    with open(csv_path, 'a', encoding="utf8", newline='') as csvfile:
-        wr = csv.writer(response, csvfile, delimiter=';')
+    if format == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename= "{author_id}.csv"'
+
+        csv_path = save_path / "publications.csv"
+        with open(csv_path, 'a', encoding="utf8", newline='') as csvfile:
+            wr = csv.writer(response, csvfile, delimiter=';')
+            for publication in parser.publications:
+                saving_publication = [
+                    publication.title,
+                    publication.authors,
+                    publication.info,
+                    publication.link,
+                    publication.year
+                ]
+                wr.writerow(saving_publication)
+    else:
+        dict_for_excel = ({'Заголовок публикации': [],
+                           'Авторы публикации': [],
+                           'Библиографическая информация': [],
+                           'Ссылка на Elibrary.ru': [],
+                           'Год публикации': []})
         for publication in parser.publications:
-            saving_publication = [
-                publication.title,
-                publication.authors,
-                publication.info,
-                publication.link,
-                publication.year
-            ]
-            wr.writerow(saving_publication)
+            dict_for_excel['Заголовок публикации'].append(publication.title)
+            dict_for_excel['Авторы публикации'].append(publication.authors)
+            dict_for_excel['Библиографическая информация'].append(publication.info)
+            dict_for_excel['Ссылка на Elibrary.ru'].append(publication.link)
+            dict_for_excel['Год публикации'].append(int(publication.year))
+        excel = pandas.DataFrame(dict_for_excel)
+        excel.to_excel(f'{save_path}/{author_id}.xlsx', index=False)
+        with open(f'{save_path}/{author_id}.xlsx', 'rb') as file_fo_download:
+            response = HttpResponse(file_fo_download.read())
+            response['Content-Disposition'] = f'attachment; filename={author_id}.xlsx'
+            response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
     return response
 
@@ -63,9 +85,6 @@ def publications(request, author_id):
     year_from = request.GET.get('year_from', 2015)
     year_to = request.GET.get('year_to', 2021)
 
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename= "{author_id}.csv"'
-
     try:
         int(year_from)
         int(year_to)
@@ -82,10 +101,10 @@ def publications(request, author_id):
         parser.find_publications()
         parser.parse_publications()
         #add_years_to_Data_Base(parser, Years)
-        if format == 'json':
-            return JsonResponse(publication_json(parser))
+        if format != 'json':
+            return save_publication_to_csv_or_xlsx(tmpdir, author_id, parser, format)
         else:
-            return save_publication_to_csv(tmpdir, author_id, response, parser)
+            return JsonResponse(publication_json(parser))
 
 
 def add_years_to_Data_Base(parser, Years):
