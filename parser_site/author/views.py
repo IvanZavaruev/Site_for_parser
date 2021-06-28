@@ -19,7 +19,10 @@ def index(request):
 def search(request):
     if request.method == 'GET':
         author_id = request.GET['author_id']
-        return HttpResponseRedirect(reverse('publications', args=[author_id]))
+        if len(author_id) == 0:
+            return HttpResponse('Вы ввели пустое значение, вернитесь на страницу поиска и повторите попытку!')
+        else:
+            return HttpResponseRedirect(reverse('publications', args=[author_id]))
 
 
 def save_publication_to_csv_or_xlsx(tmpdir, author_id, parser, format):
