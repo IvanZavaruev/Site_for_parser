@@ -9,18 +9,60 @@ from elibrary_parser.Parsers import AuthorParser
 
 
 def index(request):
+    """loads and shows main page of Parser web-site
+
+    Parameters
+    ----------
+    request
+        a standart Django parameter in views.py that
+        contains data about the request
+
+    Returns
+    -------
+    Html-page
+    """
     template = loader.get_template('author/index.html')
 
     return HttpResponse(template.render())
 
 
 def search(request):
+    """takes author_id from the form html page and
+       pass it to URL int:author_id/publications/
+
+    Parameters
+    ----------
+    request
+        a standart Django parameter in views.py that
+        contains data about the request
+
+    Returns
+    -------
+    redirects to URL int:author_id/publications/
+    """
     if request.method == 'GET':
         author_id = request.GET['author_id']
         return HttpResponseRedirect(reverse('publications', args=[author_id]))
 
 
 def save_publication_to_csv_or_xlsx(tmpdir, author_id, parser, format):
+    """Return list of publications in csv or xlsx format
+
+    Parameters
+    ----------
+    tmpdir : str
+        path to temp directory
+    author_id : int
+        unique author number from the Elibrary.ru
+    parser:
+        object of class AuthorParser
+    format:
+        get request parameter
+
+    Returns
+    -------
+    csv-file or xlsx-file
+    """
     save_path = Path(f"{tmpdir}/processed/{str(author_id)}")
     save_path.mkdir(exist_ok=True)
 
@@ -63,6 +105,16 @@ def save_publication_to_csv_or_xlsx(tmpdir, author_id, parser, format):
 
 
 def publication_json(parser):
+    """Return list of publication in json format
+
+    Parameter
+    ---------
+    parser:
+        object of class AuthorParser
+
+    Returns
+    -------
+    Dict with 'publications' key """
     json_data = []
     for publication in parser.publications:
         saving_publication = (
@@ -79,8 +131,25 @@ def publication_json(parser):
 
 
 def publications(request, author_id):
-    format = request.GET.get('format', None)
+    """Parses publications using AuthorParser
+    this method can take data output format,
+    define search range by publication year
+    (year_from and year_to - start and end of range)
 
+    Parameters
+    ----------
+    request:
+        a standart Django parameter in views.py that
+        contains data about the request
+    author_id: int
+        unique author number from the Elibrary.ru
+
+    Returns
+    -------
+    list of publication in csv, xlsx, json format
+    """
+    format = request.GET.get('format', None)
+    print(type(format))
     year_from = request.GET.get('year_from', 2015)
     year_to = request.GET.get('year_to', 2021)
 
