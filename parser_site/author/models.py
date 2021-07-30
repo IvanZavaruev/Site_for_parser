@@ -12,7 +12,7 @@ class Years(models.Model):
     year = models.IntegerField(primary_key=True, unique=True)
 
     def __str__(self):
-        return self.year
+        return str(self.year)
 
 
 class Publication(models.Model):
